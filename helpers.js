@@ -1,11 +1,12 @@
 
 // To remove entities global search
 $(function () {
+  if (!firmDirectory.configuration.standalone) {
     var $header = $("#header");
-    $header.find("#search").show();
     $header.find(".to-replace").entitysearch("destroy");
+    $header.find("#search").show();
+  }
 });
-
 
 // To override entities global search filters
 $(function () {
