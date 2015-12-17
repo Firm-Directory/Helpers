@@ -29,29 +29,17 @@ $(function () {
 
 // To redirect People tab in default search to Entities People Search
 $(function () {
-  setInterval(function () {
-    if (typeof searchTypeClick == "function") {
-      searchTypeClick = function(typeId) {
-        if ($('#t').val() != typeId) {
-            $('#t').val(typeId);
-            $('#p').hide().appendTo('#search-types');
-            $('#search-advanced').remove();
-            $('#order-by').remove();
-            $('#order-is-descending').remove();
-            typeId === "person" ? $(pex.events).trigger("default-search-change", [typeId]) : navigateSearch();
-        }
-      };
-    }
-  }, 500);
-
   pex.addEventHandler({
-    event: "default-search-change",
-    handler: function (e, args) {
-      if (args == "person") {
-        var querystring = pex.url.querystring();
-        var phrase = pex.url.deparam(querystring).p || "";
-        var options = { keyword: phrase };
-        entities.search.route.go([], options);
+    event: pex.event.any.page.loaded,
+    handler: function (e) {
+      if (e.url.startsWith("search/all")) {
+        var $person = $("#search-types li[data-value='person'] > a");
+        $person.attr("onclick", "").click(function() {
+          var querystring = pex.url.querystring();
+          var phrase = pex.url.deparam(querystring).p || "";
+          var options = { keyword: phrase };
+          entities.search.route.go([], options);
+        });
       }
     }
   });
