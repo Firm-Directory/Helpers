@@ -10,21 +10,20 @@ $(function () {
 
 // To override entities global search filters
 $(function () {
-    var $header = $("#header");
-    $header.find("to-replace").entitysearch("option", "popover", {
-      ajax: {
-        delay: 0,
-        url: entities.api.search.endpoints.account,
-        type: "POST",
-        data: function (keyword) {
-          return $.toJSON({
-            searchType: entities.api.search.type.account,
-            filters: [entities.api.search.filterBuilder.profile("", keyword, entities.api.search.filterBuilder.operator.like)/* Provide your additional filders here */],
-            include: { skills: false, entities: [], facets: [] },
-            sorting: { propertyName: entities.search.profile.formatProperty(entities.profile.properties.system.lastName), direction: entities.api.search.sortDirection.asc }
-          });
-        }
-    });
+    entities.globalSearch.options.popover.ajax.data = function(keyword, config) {
+      var request = {
+        searchType: config.type,
+        filters: [entities.api.search.filterBuilder.profile("", keyword, entities.api.search.filterBuilder.operator.like),entities.api.search.filterBuilder.profile("RecordType", "People", entities.api.search.filterBuilder.operator.equal)],
+        include: { skills: false, entities: [], facets: [] },
+        sorting: { propertyName: entities.search.profile.formatProperty(entities.profile.properties.system.lastName), direction: entities.api.search.sortDirection.asc },
+        paging: { size: config.max, number: 1 }
+      };
+      if (config.type !== 'account') {
+          var prop = (entities.cache.get(entities.cache.keys.definitions)[config.type] || { properties: [] }).properties[0].name;
+          request.sorting.propertyName = [config.type, prop].join(".");
+      }
+      return request;
+    };
 });
 
 // To redirect People tab in default search to Entities People Search
