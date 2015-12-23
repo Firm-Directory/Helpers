@@ -26,6 +26,53 @@ $(function () {
     };
 });
 
+// To change globalSearch user click to go to profile instead of feed
+updateGlobalSearchResultsData = function (data, searchText) {
+    if (data == null || searchText != $('#global-search-text').val().trim()) {
+        $("#global-search-results").empty();
+        $("#global-search-results").css("display", "none");
+    }
+    else {
+        for (var i = 0; i < data.all.length; i++) {
+            var result = data.all[i];
+
+            if (result.type == 'user') {
+                result.friendlyType = 'Person';
+		            result.url = makeServicesUrlRelative(result.url + "/viewprofile");
+            }
+            else if (result.type == 'system') {
+                result.friendlyType = 'System';
+                result.url = makeServicesUrlRelative(result.url + "/activities");
+            }
+            else if (result.type == 'tag') {
+                result.friendlyType = 'Tag';
+                result.isTag = true;
+                result.url = makeServicesUrlRelative(result.url + "/activities");
+            }
+            else {
+                result.friendlyType = 'Group';
+                result.url = makeServicesUrlRelative(result.url + "/activities");
+            }
+        }
+
+        data.searchText = searchText;
+        data.encodedSearchText = encodeURIComponent(searchText);
+
+        if (pulse.ui.currentStream != null) {
+            data.currentStream = pulse.ui.currentStream;
+            data.currentStream.isUser = data.currentStream.type == 'user';
+            data.currentStream.isGroup = data.currentStream.type == 'group';
+            data.currentStream.isSystem = data.currentStream.type == 'system';
+            data.currentStream.isTag = data.currentStream.type == 'tag';
+            data.currentStream.isFolder = data.currentStream.type == 'filefolder';
+        }
+
+        dynamicContentReady($("#global-search-results").html(Mustache.to_html($('#tmplGlobalSearchResults').html(), data)));
+        $("#global-search-results").find('li:first').addClass('selected');
+        $("#global-search-results").css("display", "block");
+    }
+}
+
 // To redirect People tab in default search to Entities People Search
 $(function () {
   pex.addEventHandler({
